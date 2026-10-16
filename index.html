@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f6f2ec">
+<title>Percha · Armario y estilista IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f2ec; --surface:#fffdf9; --surface2:#efe9e0; --ink:#1f1b16; --muted:#7a7065;
+  --line:#e2dacd; --accent:#8a4b2a; --accent-ink:#fff; --accent-soft:#f1e2d6;
+  --ok:#3f7a4a; --danger:#b23a2e; --shadow:0 1px 2px rgba(40,30,20,.06),0 4px 14px rgba(40,30,20,.06);
+  --radius:14px; --nav-h:64px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16130f; --surface:#201c17; --surface2:#2a251f; --ink:#f1ebe2; --muted:#a69a8c;
+    --line:#3a332b; --accent:#d99a6c; --accent-ink:#1d1510; --accent-soft:#3a2a1f; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16130f; --surface:#201c17; --surface2:#2a251f; --ink:#f1ebe2; --muted:#a69a8c;
+  --line:#3a332b; --accent:#d99a6c; --accent-ink:#1d1510; --accent-soft:#3a2a1f; --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+body{padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 12px);overflow-x:hidden}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:650;letter-spacing:-.01em;margin:0}
+h1{font-size:26px} h2{font-size:21px} h3{font-size:17px}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{font-family:Fraunces,serif;font-size:22px;font-weight:650}
+.brand span{color:var(--accent)}
+.muted{color:var(--muted)} .small{font-size:13px}
+.btn{border:0;border-radius:999px;padding:10px 16px;background:var(--surface2);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.block{width:100%}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.stack>*+*{margin-top:12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;cursor:pointer;font-size:14px;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .n{opacity:.6;margin-left:4px;font-size:12px}
+.wrapchips{flex-wrap:wrap;overflow:visible}
+label.f{display:block;font-weight:500;margin-bottom:6px}
+input[type=text],input[type=number],input[type=password],input[type=search],select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:80px;resize:vertical}
+.filters{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0 12px}
+.filters input{grid-column:1/-1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+@media(min-width:600px){.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;position:relative;padding:0;text-align:left}
+.item img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;background:#fff}
+.item .meta{padding:6px 8px;font-size:12px;line-height:1.3}
+.item .meta b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{position:absolute;top:6px;left:6px;background:var(--accent);color:var(--accent-ink);font-size:11px;padding:2px 7px;border-radius:999px}
+.badge.wait{background:var(--surface2);color:var(--muted)}
+.empty{text-align:center;padding:40px 16px;color:var(--muted)}
+.empty .big{font-size:44px}
+nav.bottom{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.bottom .wrap{display:grid;grid-template-columns:repeat(4,1fr);height:var(--nav-h);padding:0}
+nav.bottom button{border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;color:var(--muted);cursor:pointer}
+nav.bottom button .ic{font-size:20px;line-height:1}
+nav.bottom button[aria-current="page"]{color:var(--accent);font-weight:600}
+.fab{position:fixed;right:16px;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px);z-index:25;border-radius:999px;padding:14px 20px;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(15,10,5,.5);display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:640px){.modal{align-items:center}}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+@media(min-width:640px){.sheet{border-radius:18px}}
+.sheet img.hero{width:100%;max-height:44vh;object-fit:contain;background:#fff;border-radius:12px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 80px);z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;max-width:90vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.onb{position:fixed;inset:0;z-index:70;background:var(--bg);overflow:auto;padding:calc(env(safe-area-inset-top) + 16px) 0 calc(env(safe-area-inset-bottom) + 24px)}
+.progress{height:4px;background:var(--surface2);border-radius:4px;overflow:hidden;margin:12px 0 20px}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.field{margin-bottom:18px}
+.range-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.outfit .pieces{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin:12px 0}
+.outfit .pieces figure{margin:0}
+.outfit .pieces img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;background:#fff;border:1px solid var(--line)}
+.outfit .pieces figcaption{font-size:11px;color:var(--muted);line-height:1.25;margin-top:3px}
+.note{background:var(--accent-soft);border-radius:10px;padding:10px 12px;font-size:14px}
+.trends ul{margin:8px 0 0;padding-left:18px}
+.trends li{margin:3px 0}
+.src a{color:var(--accent);word-break:break-word}
+.spinner{width:18px;height:18px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand">Percha<span>.</span></div>
+  <div id="hdrInfo" class="muted small"></div>
+</div></header>
+
+<main class="wrap" id="view" style="padding-top:14px"></main>
+
+<input type="file" id="fileInput" accept="image/*" multiple class="sr">
+<input type="file" id="camInput" accept="image/*" capture="environment" class="sr">
+<input type="file" id="importInput" accept="application/json,.json" class="sr">
+
+<nav class="bottom"><div class="wrap">
+  <button data-v="wardrobe"><span class="ic">👕</span>Armario</button>
+  <button data-v="stylist"><span class="ic">✨</span>Estilista</button>
+  <button data-v="looks"><span class="ic">♥</span>Looks</button>
+  <button data-v="settings"><span class="ic">⚙︎</span>Ajustes</button>
+</div></nav>
+
+<script>
+/* ============ Constantes ============ */
+const CATS=[
+  {k:'top',l:'Arriba',i:'👕'},{k:'bottom',l:'Abajo',i:'👖'},{k:'onepiece',l:'Vestidos / monos',i:'👗'},
+  {k:'outer',l:'Abrigos',i:'🧥'},{k:'shoes',l:'Calzado',i:'👟'},{k:'acc',l:'Accesorios',i:'🧢'}
+];
+const CAT=Object.fromEntries(CATS.map(c=>[c.k,c]));
+const SEASONS=['primavera','verano','otoño','invierno'];
+const FORMALITY=['','Muy informal','Informal','Smart casual','Formal','Muy formal'];
+const COLOR_OPTS=['Negro','Blanco','Gris','Azul marino','Azul','Celeste','Beige','Marrón','Verde','Verde oliva','Rojo','Burdeos','Rosa','Amarillo','Naranja','Morado'];
+const DEFAULT_SETTINGS={apiKey:'',model:'claude-sonnet-5-5',tagModel:'claude-haiku-5-5'};
+
+const QUIZ=[
+ {title:'Sobre ti',fields:[
+  {id:'name',label:'¿Cómo te llamas?',type:'text'},
+  {id:'wear',label:'¿Qué ropa sueles llevar?',type:'single',options:['Masculina','Femenina','Ambas / unisex']},
+  {id:'age',label:'Edad',type:'single',options:['<25','25–34','35–44','45–54','55+']},
+  {id:'height',label:'Altura (cm)',type:'number'},
+  {id:'build',label:'Complexión',type:'single',options:['Delgada','Atlética','Media','Corpulenta']},
+  {id:'city',label:'Dónde vives / clima',type:'text',placeholder:'p. ej. Barcelona, clima mediterráneo'}]},
+ {title:'Tu estilo',fields:[
+  {id:'styles',label:'Estilos que te gustan',type:'multi',options:['Casual','Minimalista','Clásico','Smart casual','Streetwear','Deportivo / athleisure','Outdoor / técnico','Workwear','Preppy','Rockero','Elegante','Bohemio']},
+  {id:'fit',label:'Ajuste preferido',type:'single',options:['Ajustado','Regular','Holgado / oversize']},
+  {id:'icons',label:'Alguien cuyo estilo te inspire (opcional)',type:'text'}]},
+ {title:'Colores',fields:[
+  {id:'colorsLove',label:'Colores que más te gustan',type:'multi',options:COLOR_OPTS},
+  {id:'colorsAvoid',label:'Colores que evitas',type:'multi',options:COLOR_OPTS},
+  {id:'skin',label:'Tono de piel',type:'single',options:['Claro','Medio','Oliva','Oscuro']},
+  {id:'patterns',label:'Estampados',type:'single',options:['Me encantan','Con moderación','Prefiero liso']}]},
+ {title:'Tu día a día',fields:[
+  {id:'occasions',label:'Ocasiones habituales',type:'multi',options:['Oficina','Trabajo informal','Teletrabajo','Reuniones / clientes','Deporte','Moto','Fin de semana','Cenas / salir','Eventos formales','Viajes']},
+  {id:'dresscode',label:'Código de vestimenta en el trabajo',type:'single',options:['Libre','Smart casual','Business','Uniforme / EPI']},
+  {id:'comfort',label:'¿Qué priorizas?',type:'range',min:1,max:5,left:'Comodidad',right:'Estilo'},
+  {id:'trendy',label:'¿Cuánto seguir las tendencias?',type:'single',options:['Nada, atemporal','Un toque','Bastante','A tope']}]},
+ {title:'Detalles finales',fields:[
+  {id:'highlight',label:'Qué te gusta resaltar o disimular',type:'textarea'},
+  {id:'never',label:'Cosas que nunca te pondrías',type:'textarea'},
+  {id:'apiKey',label:'Clave API de Claude (para la IA)',type:'password',hint:'Se guarda solo en este navegador. Puedes añadirla más tarde en Ajustes.'}]}
+];
+
+/* ============ Utilidades ============ */
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>[...el.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
+function currentSeason(d=new Date()){const m=d.getMonth()+1;return m>=3&&m<=5?'primavera':m<=8&&m>=6?'verano':m>=9&&m<=11?'otoño':'invierno'}
+let toastT;
+function toast(msg,ms=2600){let t=$('#toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';document.body.appendChild(t)}t.textContent=msg;t.hidden=false;clearTimeout(toastT);if(ms)toastT=setTimeout(()=>t.hidden=true,ms)}
+
+/* ============ IndexedDB ============ */
+const DB={db:null,
+  open(){return new Promise((res,rej)=>{const r=indexedDB.open('percha',1);
+    r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('items',{keyPath:'id'});d.createObjectStore('outfits',{keyPath:'id'});d.createObjectStore('kv')};
+    r.onsuccess=()=>{this.db=r.result;res()};r.onerror=()=>rej(r.error)})},
+  tx(store,mode,fn){return new Promise((res,rej)=>{const t=this.db.transaction(store,mode);const req=fn(t.objectStore(store));t.oncomplete=()=>res(req?req.result:undefined);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})},
+  all(s){return this.tx(s,'readonly',o=>o.getAll())},
+  get(s,k){return this.tx(s,'readonly',o=>o.get(k))},
+  put(s,v,k){return this.tx(s,'readwrite',o=>k===undefined?o.put(v):o.put(v,k))},
+  del(s,k){return this.tx(s,'readwrite',o=>o.delete(k))},
+  clear(s){return this.tx(s,'readwrite',o=>o.clear())}
+};
+
+/* ============ Estado ============ */
+const S={view:'wardrobe',items:[],outfits:[],profile:null,settings:{...DEFAULT_SETTINGS},trends:null,dislikes:[],results:[],tagging:false,
+  F:{cat:'all',season:'',color:'',form:'',q:''}};
+const saveKV=(k,v)=>DB.put('kv',v,k);
+
+/* ============ Imágenes ============ */
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('No se pudo leer la imagen'));i.src=src})}
+async function resizeToDataURL(src,max,q=.82){
+  const img=await loadImg(src);let w=img.naturalWidth,h=img.naturalHeight;const s=Math.min(1,max/Math.max(w,h));
+  w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(img,0,0,w,h);return c.toDataURL('image/jpeg',q)}
+async function fileToDataURL(file){const url=URL.createObjectURL(file);try{return await resizeToDataURL(url,900)}finally{URL.revokeObjectURL(url)}}
+
+/* ============ API de Claude ============ */
+async function callClaude({model,system,content,maxTokens=1500,tools}){
+  const key=S.settings.apiKey;if(!key)throw new Error('Falta la clave API. Añádela en Ajustes.');
+  let messages=[{role:'user',content}];
+  for(let i=0;i<5;i++){
+    const body={model,max_tokens:maxTokens,system,messages};if(tools)body.tools=tools;
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{
+      'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j?.error?.message||('Error HTTP '+r.status));
+    if(j.stop_reason==='pause_turn'){messages=[{role:'user',content},{role:'assistant',content:j.content}];continue}
+    return j;
+  }
+  throw new Error('La IA tardó demasiado en responder');
+}
+const textOf=j=>(j.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+function parseJSON(t){const m=t.match(/```(?:json)?\s*([\s\S]*?)```/);const s=m?m[1]:t;const a=s.indexOf('{'),b=s.lastIndexOf('}');
+  if(a<0||b<0)throw new Error('La IA no devolvió un formato válido');return JSON.parse(s.slice(a,b+1))}
+
+/* --- Etiquetado de prendas --- */
+const TAG_SYSTEM=`Eres un experto en moda que cataloga prendas a partir de una foto. Responde SOLO con un objeto JSON, sin texto adicional, con estas claves:
+{"name":"nombre corto y descriptivo en español (p. ej. 'Camisa Oxford azul')",
+"category":"una de: top, bottom, onepiece, outer, shoes, acc",
+"type":"tipo concreto en español (camiseta, camisa, polo, jersey, sudadera, vaqueros, chinos, falda, vestido, chaqueta, abrigo, zapatillas, botas, cinturón, gorra...)",
+"colors":["colores principales en español, el dominante primero"],
+"seasons":["subconjunto de: primavera, verano, otoño, invierno"],
+"formality":número 1-5 (1 muy informal, 3 smart casual, 5 muy formal),
+"pattern":"liso, rayas, cuadros, estampado, logo...",
+"material":"material probable",
+"style":"estilo en 1-3 palabras"}
+Si hay varias prendas en la foto, describe la principal.`;
+async function tagItem(item){
+  const small=await resizeToDataURL(item.img,560,.8);
+  const j=await callClaude({model:S.settings.tagModel,system:TAG_SYSTEM,maxTokens:500,content:[
+    {type:'image',source:{type:'base64',media_type:'image/jpeg',data:small.split(',')[1]}},
+    {type:'text',text:'Cataloga esta prenda.'}]});
+  const d=parseJSON(textOf(j));
+  Object.assign(item,{name:d.name||item.name,category:CAT[d.category]?d.category:'top',type:d.type||'',colors:Array.isArray(d.colors)?d.colors.map(cap):[],
+    seasons:Array.isArray(d.seasons)?d.seasons.map(s=>s.toLowerCase()).filter(s=>SEASONS.includes(s)):[],formality:Math.min(5,Math.max(1,parseInt(d.formality)||2)),
+    pattern:d.pattern||'',material:d.material||'',style:d.style||'',tagged:true});
+  await DB.put('items',item);return item;
+}
+async function runTagQueue(){
+  if(S.tagging)return;const pending=S.items.filter(i=>!i.tagged);if(!pending.length)return;
+  if(!S.settings.apiKey){toast('Prendas guardadas. Añade la clave API para etiquetarlas con IA.',4000);return}
+  S.tagging=true;let n=0,err=0;
+  for(const it of pending){n++;toast(`Analizando prendas con IA… ${n}/${pending.length}`,0);
+    try{await tagItem(it)}catch(e){err++;console.error(e);if(/clave|api key|auth|401/i.test(e.message)){toast('Error de API: '+e.message,5000);break}}
+    if(S.view==='wardrobe')render();}
+  S.tagging=false;toast(err?`Listo, ${err} prenda(s) sin etiquetar (puedes reintentar)`:'Prendas etiquetadas ✓');render();
+}
+
+/* --- Tendencias (con búsqueda web) --- */
+async function fetchTrends(){
+  const p=S.profile||{};const season=currentSeason();const year=new Date().getFullYear();
+  const who=p.wear==='Femenina'?'mujer':p.wear==='Masculina'?'hombre':'hombre y mujer';
+  const j=await callClaude({model:S.settings.model,maxTokens:1800,
+    tools:[{type:'web_search_20250305',name:'web_search',max_uses:3,user_location:{type:'approximate',country:'ES',timezone:'Europe/Madrid'}}],
+    system:'Eres un analista de tendencias de moda. Busca en la web información actual y resume en español.',
+    content:`Busca las tendencias de moda de ${who} para ${season} ${year} (Europa/España), con foco en estilos: ${(p.styles||[]).join(', ')||'variados'}. Devuelve entre 6 y 10 viñetas concretas y aplicables (prendas, colores, combinaciones, siluetas), una por línea empezando por "- ". Sin introducción ni conclusión.`});
+  const text=textOf(j);const lines=text.split('\n').map(l=>l.trim()).filter(l=>/^[-•*]/.test(l)).map(l=>l.replace(/^[-•*]\s*/,'').replace(/\*\*/g,''));
+  const srcMap=new Map();(j.content||[]).forEach(b=>(b.citations||[]).forEach(c=>{if(c.url&&!srcMap.has(c.url))srcMap.set(c.url,c.title||c.url)}));
+  S.trends={season,year,date:new Date().toISOString(),lines:lines.length?lines:[text.trim()],sources:[...srcMap].slice(0,6).map(([url,title])=>({url,title}))};
+  await saveKV('trends',S.trends);
+}
+
+/* --- Estilista --- */
+const STYLIST_SYSTEM=`Eres un estilista personal experto. Creas outfits usando EXCLUSIVAMENTE prendas del armario del usuario, identificadas por su id.
+Reglas:
+- Cada outfit debe ser completo y coherente para la ocasión y el clima: parte de arriba + parte de abajo (o un vestido/mono) + calzado; añade abrigo si hace frío o llueve, y accesorios si suman.
+- Respeta el perfil del usuario (estilos, colores que ama y evita, ajuste, código de vestimenta, cosas que nunca se pondría).
+- Aplica las tendencias indicadas en la medida que el usuario quiera, sin forzar.
+- Haz que los outfits sean distintos entre sí y evita repetir las combinaciones rechazadas.
+- Si al armario le falta algo que mejoraría mucho los looks, sugiérelo en "missing" (una sola prenda concreta); si no, deja "missing" vacío.
+Responde SOLO con JSON con este formato:
+{"outfits":[{"title":"nombre corto del look","item_ids":["id1","id2"],"why":"por qué funciona (1-2 frases)","tip":"consejo de estilismo concreto (cómo llevarlo)","missing":""}]}`;
+function itemLine(i){return [i.id,i.name||'',CAT[i.category]?.l||'',i.type,(i.colors||[]).join('/'),(i.seasons||[]).join('/')||'todas',FORMALITY[i.formality]||'',i.pattern,i.material,i.style,i.notes].map(x=>String(x||'').replace(/\|/g,' ')).join(' | ')}
+async function generateOutfits(req){
+  const items=S.items.filter(i=>i.tagged||i.name);if(!items.length)throw new Error('Primero añade (y etiqueta) algunas prendas');
+  const p={...S.profile};const season=currentSeason();
+  const parts=[`PERFIL DEL USUARIO:\n${JSON.stringify(p)}`,`FECHA: ${new Date().toLocaleDateString('es-ES')} · Temporada: ${season}`];
+  if(req.useTrends&&S.trends)parts.push(`TENDENCIAS ACTUALES (${S.trends.season} ${S.trends.year}):\n- ${S.trends.lines.join('\n- ')}`);
+  if(S.dislikes.length)parts.push(`COMBINACIONES QUE EL USUARIO RECHAZÓ (evítalas):\n${S.dislikes.slice(-15).map(d=>'- '+d.names.join(' + ')+(d.reason?` (motivo: ${d.reason})`:'')).join('\n')}`);
+  parts.push(`PETICIÓN: ${req.count} outfit(s) · Ocasión: ${req.occasion} · Clima: ${req.weather}${req.notes?` · Notas: ${req.notes}`:''}`);
+  parts.push(`ARMARIO (id | nombre | categoría | tipo | colores | temporadas | formalidad | estampado | material | estilo | notas):\n${items.map(itemLine).join('\n')}`);
+  const j=await callClaude({model:S.settings.model,system:STYLIST_SYSTEM,maxTokens:2500,content:parts.join('\n\n')});
+  const d=parseJSON(textOf(j));const ids=new Set(S.items.map(i=>i.id));
+  return (d.outfits||[]).map(o=>({id:uid(),title:o.title||'Look',item_ids:(o.item_ids||[]).filter(x=>ids.has(x)),why:o.why||'',tip:o.tip||'',missing:o.missing||'',occasion:req.occasion,weather:req.weather,created:new Date().toISOString()})).filter(o=>o.item_ids.length);
+}
+
+/* ============ Vistas ============ */
+function render(){
+  $$('nav.bottom button').forEach(b=>b.setAttribute('aria-current',b.dataset.v===S.view?'page':'false'));
+  $('#hdrInfo').textContent=S.profile?.name?`Hola, ${S.profile.name}`:'';
+  ({wardrobe:viewWardrobe,stylist:viewStylist,looks:viewLooks,settings:viewSettings})[S.view]();
+}
+
+function filteredItems(){const F=S.F,q=F.q.trim().toLowerCase();
+  return S.items.filter(i=>(F.cat==='all'||i.category===F.cat)&&(!F.season||(i.seasons||[]).includes(F.season)||!(i.seasons||[]).length)
+    &&(!F.color||(i.colors||[]).some(c=>c.toLowerCase()===F.color.toLowerCase()))&&(!F.form||String(i.formality)===F.form)
+    &&(!q||[i.name,i.type,i.material,i.style,i.notes,...(i.colors||[])].join(' ').toLowerCase().includes(q))).sort((a,b)=>b.created-a.created)}
+
+function viewWardrobe(){
+  const F=S.F;const counts={all:S.items.length};CATS.forEach(c=>counts[c.k]=S.items.filter(i=>i.category===c.k).length);
+  const colors=[...new Set(S.items.flatMap(i=>i.colors||[]))].sort();
+  const list=filteredItems();
+  $('#view').innerHTML=`
+   <div class="row" style="justify-content:space-between;margin-bottom:8px"><h1>Tu armario</h1><span class="muted small">${S.items.length} prendas</span></div>
+   <div class="chips" role="toolbar" aria-label="Tipo de prenda">
+     <button class="chip" data-cat="all" aria-pressed="${F.cat==='all'}">Todo<span class="n">${counts.all}</span></button>
+     ${CATS.map(c=>`<button class="chip" data-cat="${c.k}" aria-pressed="${F.cat===c.k}">${c.i} ${c.l}<span class="n">${counts[c.k]}</span></button>`).join('')}
+   </div>
+   <div class="filters">
+     <select id="fSeason" aria-label="Temporada"><option value="">Temporada</option>${SEASONS.map(s=>`<option value="${s}" ${F.season===s?'selected':''}>${cap(s)}</option>`).join('')}</select>
+     <select id="fColor" aria-label="Color"><option value="">Color</option>${colors.map(c=>`<option ${F.color===c?'selected':''}>${esc(c)}</option>`).join('')}</select>
+     <select id="fForm" aria-label="Formalidad"><option value="">Formalidad</option>${FORMALITY.slice(1).map((f,i)=>`<option value="${i+1}" ${F.form==String(i+1)?'selected':''}>${f}</option>`).join('')}</select>
+     <input type="search" id="fQ" placeholder="Buscar (lino, rayas, azul…)" value="${esc(F.q)}">
+   </div>
+   ${S.items.length?(list.length?`<div class="grid">${list.map(i=>`
+     <button class="item" data-id="${i.id}">
+       ${!i.tagged?`<span class="badge wait">${S.tagging?'Analizando…':'Sin etiquetar'}</span>`:''}
+       <img src="${i.img}" alt="${esc(i.name||'Prenda')}" loading="lazy">
+       <div class="meta"><b>${esc(i.name||'Prenda nueva')}</b><span class="muted">${esc([CAT[i.category]?.l,(i.seasons||[]).map(s=>s.slice(0,3)).join('·')].filter(Boolean).join(' · '))}</span></div>
+     </button>`).join('')}</div>`:`<div class="empty">Ninguna prenda coincide con los filtros.</div>`)
+   :`<div class="empty"><div class="big">🧺</div><p>Tu armario está vacío.<br>Sube fotos de tus prendas (una por foto, mejor sobre fondo liso).</p></div>`}
+   <div class="row" style="justify-content:center;margin:18px 0 70px"><button class="btn ghost" id="camBtn">📷 Hacer foto</button>${S.items.some(i=>!i.tagged)&&!S.tagging?`<button class="btn ghost" id="retagBtn">✨ Etiquetar pendientes</button>`:''}</div>
+   <button class="btn primary fab" id="addBtn">＋ Añadir prendas</button>`;
+  $$('[data-cat]').forEach(b=>b.onclick=()=>{F.cat=b.dataset.cat;render()});
+  $('#fSeason').onchange=e=>{F.season=e.target.value;render()};
+  $('#fColor').onchange=e=>{F.color=e.target.value;render()};
+  $('#fForm').onchange=e=>{F.form=e.target.value;render()};
+  $('#fQ').oninput=e=>{F.q=e.target.value;clearTimeout(S._qt);S._qt=setTimeout(()=>{render();const el=$('#fQ');el.focus();el.setSelectionRange(el.value.length,el.value.length)},300)};
+  $$('.item').forEach(b=>b.onclick=()=>openItem(b.dataset.id));
+  $('#addBtn').onclick=()=>$('#fileInput').click();
+  $('#camBtn').onclick=()=>$('#camInput').click();
+  const rb=$('#retagBtn');if(rb)rb.onclick=runTagQueue;
+}
+
+async function addFiles(files){
+  files=[...files].filter(f=>f.type.startsWith('image/')||/\.(heic|heif|jpe?g|png|webp)$/i.test(f.name));if(!files.length)return;
+  let n=0;
+  for(const f of files){n++;toast(`Guardando ${n}/${files.length}…`,0);
+    try{const img=await fileToDataURL(f);const it={id:uid(),img,name:'',category:'top',type:'',colors:[],seasons:[],formality:2,pattern:'',material:'',style:'',notes:'',tagged:false,created:Date.now()};
+      await DB.put('items',it);S.items.push(it)}catch(e){console.error(e);toast('No se pudo leer '+f.name)}}
+  S.view='wardrobe';render();runTagQueue();
+}
+
+function openItem(id){
+  const it=S.items.find(i=>i.id===id);if(!it)return;
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="sheet stack" role="dialog" aria-label="Editar prenda">
+    <img class="hero" src="${it.img}" alt="">
+    <div><label class="f" for="eName">Nombre</label><input type="text" id="eName" value="${esc(it.name)}"></div>
+    <div class="filters" style="grid-template-columns:1fr 1fr;margin:0">
+      <div><label class="f" for="eCat">Categoría</label><select id="eCat">${CATS.map(c=>`<option value="${c.k}" ${it.category===c.k?'selected':''}>${c.l}</option>`).join('')}</select></div>
+      <div><label class="f" for="eType">Tipo</label><input type="text" id="eType" value="${esc(it.type)}"></div>
+    </div>
+    <div><label class="f">Temporadas</label><div class="seg" id="eSeas">${SEASONS.map(s=>`<button class="chip" data-s="${s}" aria-pressed="${(it.seasons||[]).includes(s)}">${cap(s)}</button>`).join('')}</div></div>
+    <div><label class="f" for="eCol">Colores (separados por comas)</label><input type="text" id="eCol" value="${esc((it.colors||[]).join(', '))}"></div>
+    <div class="filters" style="grid-template-columns:1fr 1fr;margin:0">
+      <div><label class="f" for="eForm">Formalidad</label><select id="eForm">${FORMALITY.slice(1).map((f,i)=>`<option value="${i+1}" ${it.formality==i+1?'selected':''}>${f}</option>`).join('')}</select></div>
+      <div><label class="f" for="ePat">Estampado</label><input type="text" id="ePat" value="${esc(it.pattern)}"></div>
+      <div><label class="f" for="eMat">Material</label><input type="text" id="eMat" value="${esc(it.material)}"></div>
+      <div><label class="f" for="eSty">Estilo</label><input type="text" id="eSty" value="${esc(it.style)}"></div>
+    </div>
+    <div><label class="f" for="eNotes">Notas para el estilista</label><textarea id="eNotes" placeholder="p. ej. me queda algo justa, solo para ocasiones especiales…">${esc(it.notes)}</textarea></div>
+    <div class="row"><button class="btn primary" id="eSave" style="flex:1">Guardar</button><button class="btn ghost" id="eTag">✨ Re-analizar</button></div>
+    <div class="row" style="justify-content:space-between"><button class="btn danger" id="eDel">Eliminar</button><button class="btn ghost" id="eClose">Cerrar</button></div>
+  </div>`;
+  document.body.appendChild(m);
+  const close=()=>m.remove();m.onclick=e=>{if(e.target===m)close()};$('#eClose',m).onclick=close;
+  $$('#eSeas .chip',m).forEach(b=>b.onclick=()=>b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true'));
+  $('#eSave',m).onclick=async()=>{Object.assign(it,{name:$('#eName',m).value.trim(),category:$('#eCat',m).value,type:$('#eType',m).value.trim(),
+    seasons:$$('#eSeas .chip',m).filter(b=>b.getAttribute('aria-pressed')==='true').map(b=>b.dataset.s),
+    colors:$('#eCol',m).value.split(',').map(s=>cap(s.trim())).filter(Boolean),formality:+$('#eForm',m).value,pattern:$('#ePat',m).value.trim(),
+    material:$('#eMat',m).value.trim(),style:$('#eSty',m).value.trim(),notes:$('#eNotes',m).value.trim(),tagged:true});
+    await DB.put('items',it);close();render();toast('Guardado')};
+  $('#eTag',m).onclick=async e=>{const b=e.currentTarget;b.disabled=true;b.innerHTML='<span class="spinner"></span>';
+    try{await tagItem(it);close();render();openItem(it.id);toast('Prenda re-analizada')}catch(err){toast(err.message,4000);b.disabled=false;b.textContent='✨ Re-analizar'}};
+  $('#eDel',m).onclick=async()=>{if(!confirm('¿Eliminar esta prenda?'))return;await DB.del('items',it.id);S.items=S.items.filter(i=>i.id!==it.id);close();render()};
+}
+
+function outfitCard(o,{saved=false}={}){
+  const pieces=o.item_ids.map(id=>S.items.find(i=>i.id===id)).filter(Boolean);
+  return `<article class="card outfit" data-oid="${o.id}">
+    <h3>${esc(o.title)}</h3>
+    <div class="muted small">${esc([o.occasion,o.weather].filter(Boolean).join(' · '))}</div>
+    <div class="pieces">${pieces.map(i=>`<figure><img src="${i.img}" alt=""><figcaption>${esc(i.name||i.type)}</figcaption></figure>`).join('')}</div>
+    ${o.why?`<p style="margin:0 0 8px">${esc(o.why)}</p>`:''}
+    ${o.tip?`<div class="note">💡 ${esc(o.tip)}</div>`:''}
+    ${o.missing?`<p class="small muted" style="margin:8px 0 0">🛍️ Te vendría bien: ${esc(o.missing)}</p>`:''}
+    <div class="row" style="margin-top:12px">${saved
+      ?`<button class="btn ghost" data-act="unsave">Quitar de mis looks</button>`
+      :`<button class="btn primary" data-act="save">♥ Guardar</button><button class="btn ghost" data-act="dislike">👎 No me convence</button>`}</div>
+  </article>`;
+}
+
+function viewStylist(){
+  const st=S._stylistForm||{occasion:(S.profile?.occasions||[])[0]||'Fin de semana',weather:'Templado',count:3,useTrends:true,notes:''};S._stylistForm=st;
+  const occ=[...new Set([...(S.profile?.occasions||[]),'Oficina','Fin de semana','Cenas / salir','Deporte','Viajes','Eventos formales'])];
+  const t=S.trends;const tAge=t?Math.round((Date.now()-new Date(t.date))/864e5):null;
+  $('#view').innerHTML=`
+   <h1 style="margin-bottom:12px">Estilista IA</h1>
+   <section class="card stack">
+     <div><label class="f">Ocasión</label><div class="seg" id="sOcc">${occ.map(o=>`<button class="chip" data-v="${esc(o)}" aria-pressed="${st.occasion===o}">${esc(o)}</button>`).join('')}</div></div>
+     <div><label class="f">Clima</label><div class="seg" id="sW">${['Frío','Fresco','Templado','Calor','Lluvia'].map(o=>`<button class="chip" data-v="${o}" aria-pressed="${st.weather===o}">${o}</button>`).join('')}</div></div>
+     <div class="row"><label class="f" for="sCount" style="margin:0">Número de looks</label><select id="sCount" style="width:auto">${[1,2,3,4,5].map(n=>`<option ${st.count==n?'selected':''}>${n}</option>`).join('')}</select>
+       <label class="row" style="margin-left:auto;gap:6px"><input type="checkbox" id="sTr" ${st.useTrends?'checked':''}> Aplicar tendencias</label></div>
+     <div><label class="f" for="sNotes">Algo más (opcional)</label><input type="text" id="sNotes" value="${esc(st.notes)}" placeholder="p. ej. quiero estrenar la chaqueta verde"></div>
+     <button class="btn primary block" id="sGo">✨ Crear outfits</button>
+   </section>
+   <section class="card trends" style="margin-top:12px">
+     <div class="row" style="justify-content:space-between"><h3>Tendencias</h3><button class="btn ghost small" id="tUpd">${t?'Actualizar':'Buscar tendencias'}</button></div>
+     ${t?`<div class="muted small">${cap(t.season)} ${t.year} · hace ${tAge} día(s)</div><ul>${t.lines.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>
+       ${t.sources?.length?`<div class="src small muted" style="margin-top:8px">Fuentes: ${t.sources.map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join(' · ')}</div>`:''}`
+      :`<p class="muted small" style="margin:6px 0 0">Aún no hay tendencias. La IA buscará en la web lo que se lleva esta temporada (se guarda y se reutiliza).</p>`}
+   </section>
+   <div id="results" class="stack" style="margin-top:14px">${S.results.map(o=>outfitCard(o)).join('')}</div>`;
+  $$('#sOcc .chip').forEach(b=>b.onclick=()=>{st.occasion=b.dataset.v;viewStylist()});
+  $$('#sW .chip').forEach(b=>b.onclick=()=>{st.weather=b.dataset.v;viewStylist()});
+  $('#sCount').onchange=e=>st.count=+e.target.value;$('#sTr').onchange=e=>st.useTrends=e.target.checked;$('#sNotes').oninput=e=>st.notes=e.target.value;
+  $('#tUpd').onclick=async e=>{const b=e.currentTarget;b.disabled=true;b.innerHTML='<span class="spinner"></span> Buscando…';
+    try{await fetchTrends();toast('Tendencias actualizadas')}catch(err){toast(err.message,5000)}viewStylist()};
+  $('#sGo').onclick=async e=>{const b=e.currentTarget;b.disabled=true;b.innerHTML='<span class="spinner"></span> Pensando tus looks…';
+    try{
+      if(st.useTrends&&!S.trends){b.innerHTML='<span class="spinner"></span> Buscando tendencias…';try{await fetchTrends()}catch(err){toast('Sin tendencias: '+err.message,4000)}}
+      b.innerHTML='<span class="spinner"></span> Pensando tus looks…';
+      S.results=await generateOutfits(st);if(!S.results.length)toast('La IA no encontró combinaciones válidas; añade más prendas',4000);
+    }catch(err){toast(err.message,5000)}
+    viewStylist();$('#results')?.scrollIntoView({behavior:'smooth'})};
+  $$('#results [data-act]').forEach(b=>b.onclick=()=>outfitAction(b.closest('[data-oid]').dataset.oid,b.dataset.act));
+}
+
+async function outfitAction(oid,act){
+  const o=S.results.find(x=>x.id===oid)||S.outfits.find(x=>x.id===oid);if(!o)return;
+  if(act==='save'){await DB.put('outfits',o);if(!S.outfits.some(x=>x.id===o.id))S.outfits.push(o);S.results=S.results.filter(x=>x.id!==oid);toast('Guardado en tus looks ♥')}
+  if(act==='dislike'){const reason=prompt('¿Qué no te convence? (opcional, ayuda a la IA a aprender)')||'';
+    S.dislikes.push({names:o.item_ids.map(id=>S.items.find(i=>i.id===id)?.name||id),reason,at:Date.now()});S.dislikes=S.dislikes.slice(-30);
+    await saveKV('dislikes',S.dislikes);S.results=S.results.filter(x=>x.id!==oid);toast('Anotado, lo tendré en cuenta')}
+  if(act==='unsave'){await DB.del('outfits',oid);S.outfits=S.outfits.filter(x=>x.id!==oid)}
+  render();
+}
+
+function viewLooks(){
+  const list=[...S.outfits].sort((a,b)=>b.created.localeCompare(a.created));
+  $('#view').innerHTML=`<h1 style="margin-bottom:12px">Mis looks</h1>
+   ${list.length?`<div class="stack">${list.map(o=>outfitCard(o,{saved:true})).join('')}</div>`
+    :`<div class="empty"><div class="big">♥</div><p>Aquí aparecerán los outfits que guardes desde el estilista.</p></div>`}`;
+  $$('[data-act]').forEach(b=>b.onclick=()=>outfitAction(b.closest('[data-oid]').dataset.oid,b.dataset.act));
+}
+
+async function viewSettings(){
+  const s=S.settings;const p=S.profile||{};
+  $('#view').innerHTML=`<h1 style="margin-bottom:12px">Ajustes</h1>
+   <section class="card stack">
+     <h3>Inteligencia artificial</h3>
+     <div><label class="f" for="kKey">Clave API de Claude</label><input type="password" id="kKey" value="${esc(s.apiKey)}" placeholder="sk-ant-…" autocomplete="off">
+       <div class="muted small" style="margin-top:4px">Se guarda solo en este navegador. Consíguela en console.anthropic.com y ponle un límite de gasto.</div></div>
+     <div><label class="f" for="kModel">Modelo del estilista</label><input type="text" id="kModel" value="${esc(s.model)}"></div>
+     <div><label class="f" for="kTag">Modelo para analizar fotos</label><input type="text" id="kTag" value="${esc(s.tagModel)}"></div>
+     <div class="row"><button class="btn primary" id="kSave">Guardar</button><button class="btn ghost" id="kTest">Probar conexión</button></div>
+   </section>
+   <section class="card stack" style="margin-top:12px">
+     <h3>Tu perfil</h3>
+     <dl class="kv">${[['Nombre',p.name],['Ropa',p.wear],['Estilos',(p.styles||[]).join(', ')],['Colores favoritos',(p.colorsLove||[]).join(', ')],['Evitas',(p.colorsAvoid||[]).join(', ')],['Ocasiones',(p.occasions||[]).join(', ')],['Tendencias',p.trendy]]
+       .map(([k,v])=>`<dt>${k}</dt><dd>${esc(v||'—')}</dd>`).join('')}</dl>
+     <button class="btn ghost" id="pEdit">Repetir cuestionario</button>
+     ${S.dislikes.length?`<button class="btn ghost" id="pDis">Olvidar ${S.dislikes.length} looks rechazados</button>`:''}
+   </section>
+   <section class="card stack" style="margin-top:12px">
+     <h3>Datos</h3>
+     <p class="muted small" style="margin:0">Todo se guarda en este navegador (IndexedDB). <span id="usage"></span></p>
+     <div class="row"><button class="btn ghost" id="bExp">⬇︎ Exportar copia</button><button class="btn ghost" id="bImp">⬆︎ Importar copia</button></div>
+     <button class="btn danger" id="bWipe">Borrar todo</button>
+   </section>
+   <p class="muted small" style="text-align:center;margin:20px 0">Percha · prototipo v0.1</p>`;
+  if(navigator.storage?.estimate){navigator.storage.estimate().then(e=>{const el=$('#usage');if(el)el.textContent=`Ocupado: ${(e.usage/1048576).toFixed(1)} MB.`})}
+  const readS=()=>({apiKey:$('#kKey').value.trim(),model:$('#kModel').value.trim()||DEFAULT_SETTINGS.model,tagModel:$('#kTag').value.trim()||DEFAULT_SETTINGS.tagModel});
+  $('#kSave').onclick=async()=>{S.settings=readS();await saveKV('settings',S.settings);toast('Ajustes guardados');runTagQueue()};
+  $('#kTest').onclick=async e=>{const b=e.currentTarget;S.settings=readS();await saveKV('settings',S.settings);b.disabled=true;b.innerHTML='<span class="spinner"></span>';
+    try{const j=await callClaude({model:S.settings.model,maxTokens:20,content:'Responde solo: OK'});toast('Conexión correcta ✓ ('+j.model+')')}catch(err){toast(err.message,5000)}
+    b.disabled=false;b.textContent='Probar conexión'};
+  $('#pEdit').onclick=()=>startOnboarding(true);
+  const pd=$('#pDis');if(pd)pd.onclick=async()=>{S.dislikes=[];await saveKV('dislikes',[]);render()};
+  $('#bExp').onclick=exportBackup;$('#bImp').onclick=()=>$('#importInput').click();
+  $('#bWipe').onclick=async()=>{if(!confirm('Se borrarán prendas, looks, perfil y ajustes de este navegador. ¿Seguro?'))return;
+    await Promise.all(['items','outfits','kv'].map(s=>DB.clear(s)));location.reload()};
+}
+
+/* ============ Copias de seguridad ============ */
+function exportBackup(){
+  const {apiKey,...settings}=S.settings;
+  const data={app:'percha',version:1,exported:new Date().toISOString(),profile:S.profile,settings,trends:S.trends,dislikes:S.dislikes,items:S.items,outfits:S.outfits};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
+  a.download=`percha-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+}
+async function importBackup(file){
+  try{const d=JSON.parse(await file.text());if(d.app!=='percha')throw new Error('Archivo no válido');
+    if(!confirm(`Importar ${d.items?.length||0} prendas y ${d.outfits?.length||0} looks. Sustituye lo que hay ahora. ¿Continuar?`))return;
+    await DB.clear('items');await DB.clear('outfits');
+    for(const i of d.items||[])await DB.put('items',i);for(const o of d.outfits||[])await DB.put('outfits',o);
+    if(d.profile)await saveKV('profile',d.profile);if(d.trends)await saveKV('trends',d.trends);await saveKV('dislikes',d.dislikes||[]);
+    if(d.settings)await saveKV('settings',{...S.settings,...d.settings,apiKey:S.settings.apiKey});
+    location.reload()}catch(e){toast('Error al importar: '+e.message,4000)}
+}
+
+/* ============ Cuestionario inicial ============ */
+function startOnboarding(edit=false){
+  const ans={...(S.profile||{}),apiKey:S.settings.apiKey};let step=0;
+  const o=document.createElement('div');o.className='onb';document.body.appendChild(o);
+  const fieldHTML=f=>{const v=ans[f.id];
+    if(f.type==='single'||f.type==='multi')return `<div class="seg" data-f="${f.id}" data-t="${f.type}">${f.options.map(op=>`<button class="chip" data-v="${esc(op)}" aria-pressed="${f.type==='multi'?(v||[]).includes(op):v===op}">${esc(op)}</button>`).join('')}</div>`;
+    if(f.type==='range')return `<input type="range" data-f="${f.id}" min="${f.min}" max="${f.max}" value="${v||3}"><div class="range-row"><span>${f.left}</span><span>${f.right}</span></div>`;
+    if(f.type==='textarea')return `<textarea data-f="${f.id}">${esc(v||'')}</textarea>`;
+    return `<input type="${f.type}" data-f="${f.id}" value="${esc(v||'')}" placeholder="${esc(f.placeholder||'')}" ${f.type==='password'?'autocomplete="off"':''}>`};
+  const collect=()=>{$$('[data-f]',o).forEach(el=>{const id=el.dataset.f;
+    if(el.classList.contains('seg')){const sel=$$('.chip[aria-pressed="true"]',el).map(b=>b.dataset.v);ans[id]=el.dataset.t==='multi'?sel:(sel[0]||'')}
+    else ans[id]=el.type==='range'||el.type==='number'?(el.value?+el.value:''):el.value.trim()})};
+  const draw=()=>{const st=QUIZ[step];
+    o.innerHTML=`<div class="wrap" style="max-width:560px">
+      ${step===0&&!edit?`<div class="brand" style="font-size:30px">Percha<span>.</span></div><p class="muted">Tu armario digital con estilista IA. Unas preguntas rápidas para conocer tu estilo.</p>`:''}
+      <div class="row" style="justify-content:space-between"><h2>${st.title}</h2><span class="muted small">${step+1}/${QUIZ.length}</span></div>
+      <div class="progress"><i style="width:${(step+1)/QUIZ.length*100}%"></i></div>
+      ${st.fields.map(f=>`<div class="field"><label class="f">${esc(f.label)}</label>${fieldHTML(f)}${f.hint?`<div class="muted small" style="margin-top:4px">${esc(f.hint)}</div>`:''}</div>`).join('')}
+      <div class="row" style="margin-top:24px">${step>0?`<button class="btn ghost" id="oBack">Atrás</button>`:edit?`<button class="btn ghost" id="oCancel">Cancelar</button>`:''}
+        <button class="btn primary" id="oNext" style="flex:1">${step===QUIZ.length-1?'Terminar':'Siguiente'}</button></div></div>`;
+    o.scrollTop=0;
+    $$('.seg',o).forEach(seg=>$$('.chip',seg).forEach(b=>b.onclick=()=>{
+      if(seg.dataset.t==='single')$$('.chip',seg).forEach(x=>x.setAttribute('aria-pressed',x===b?String(b.getAttribute('aria-pressed')!=='true'):'false'));
+      else b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true')}));
+    const bk=$('#oBack',o);if(bk)bk.onclick=()=>{collect();step--;draw()};
+    const cc=$('#oCancel',o);if(cc)cc.onclick=()=>o.remove();
+    $('#oNext',o).onclick=async()=>{collect();if(step<QUIZ.length-1){step++;draw();return}
+      const {apiKey,...profile}=ans;profile.completed=new Date().toISOString();S.profile=profile;await saveKV('profile',profile);
+      if(apiKey!==undefined){S.settings.apiKey=apiKey;await saveKV('settings',S.settings)}
+      o.remove();render();toast(edit?'Perfil actualizado':'¡Listo! Empieza subiendo fotos de tus prendas',3500);runTagQueue()};
+  };
+  draw();
+}
+
+/* ============ Arranque ============ */
+(async function init(){
+  try{await DB.open()}catch(e){$('#view').innerHTML='<div class="empty">Este navegador no permite guardar datos (¿modo privado?).</div>';return}
+  navigator.storage?.persist?.().catch(()=>{});
+  const [items,outfits,profile,settings,trends,dislikes]=await Promise.all([DB.all('items'),DB.all('outfits'),DB.get('kv','profile'),DB.get('kv','settings'),DB.get('kv','trends'),DB.get('kv','dislikes')]);
+  Object.assign(S,{items:items||[],outfits:outfits||[],profile:profile||null,settings:{...DEFAULT_SETTINGS,...(settings||{})},trends:trends||null,dislikes:dislikes||[]});
+  $$('nav.bottom button').forEach(b=>b.onclick=()=>{S.view=b.dataset.v;window.scrollTo(0,0);render()});
+  $('#fileInput').onchange=e=>{addFiles(e.target.files);e.target.value=''};
+  $('#camInput').onchange=e=>{addFiles(e.target.files);e.target.value=''};
+  $('#importInput').onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0]);e.target.value=''};
+  render();
+  if(!S.profile)startOnboarding(false);else runTagQueue();
+})();
+</script>
+</body>
+</html>
